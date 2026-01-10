@@ -28,6 +28,7 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
 
   const currentInputTranscription = useRef("");
   const currentOutputTranscription = useRef("");
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let interval: any;
@@ -36,6 +37,17 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
     }
     return () => clearInterval(interval);
   }, [isActive]);
+
+  // Auto-scroll chat to bottom when transcript updates
+  useEffect(() => {
+    if (chatContainerRef.current && transcript.length > 0) {
+      const scrollContainer = chatContainerRef.current;
+      // Use requestAnimationFrame for smooth scrolling
+      requestAnimationFrame(() => {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      });
+    }
+  }, [transcript]);
 
   const startAssessment = async () => {
     try {
@@ -99,6 +111,7 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
               setTranscript([...transcriptRef.current]);
               currentOutputTranscription.current = "";
             }
+            
           }
 
           // Audio playback
@@ -225,8 +238,8 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
           </p>
         </div>
       ) : (
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex items-center justify-between mb-6">
+        <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+          <div className="flex items-center justify-between mb-6 flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-bold border border-indigo-100 dark:bg-slate-900 dark:text-indigo-200 dark:border-slate-800">
                 {formatTime(timer)}
@@ -249,7 +262,11 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto bg-slate-50 rounded-3xl p-6 mb-6 border border-slate-200 space-y-4 dark:bg-slate-950 dark:border-slate-800">
+          <div 
+            ref={chatContainerRef}
+            className="flex-1 overflow-y-auto bg-slate-50 rounded-3xl p-6 mb-6 border border-slate-200 space-y-4 dark:bg-slate-950 dark:border-slate-800 min-h-0"
+            style={{ scrollBehavior: 'smooth', overflowAnchor: 'none' }}
+          >
             {transcript.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-50 italic dark:text-white/80">
                 <i className="fas fa-wave-square text-4xl mb-4"></i>
@@ -258,7 +275,7 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
             ) : (
               transcript.map((entry, i) => (
                 <div
-                  key={i}
+                  key={`${entry.timestamp}-${i}`}
                   className={`flex ${entry.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
@@ -268,24 +285,25 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
                         : "bg-white text-slate-800 rounded-tl-none border border-slate-200 dark:bg-slate-900 dark:text-white dark:border-slate-800"
                     }`}
                   >
-                    <p className="text-sm">{entry.text}</p>
+                    <p className="text-sm break-words">{entry.text}</p>
                   </div>
                 </div>
               ))
             )}
-            <div className="h-1 pb-4"></div>
+            <div className="h-1 pb-4" aria-hidden="true"></div>
           </div>
 
-          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-lg flex items-center justify-between dark:bg-slate-950 dark:border-slate-800">
+          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-lg flex items-center justify-between dark:bg-slate-950 dark:border-slate-800 flex-shrink-0">
             <div className="flex items-center gap-4">
-              <div className="flex gap-1">
+              <div className="flex gap-1 items-end h-8">
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className={`w-2 h-8 rounded-full bg-indigo-600 animate-pulse`}
+                    className="w-2 bg-indigo-600 rounded-full animate-pulse"
                     style={{
-                      animationDelay: `${i * 0.1}s`,
-                      height: `${Math.random() * 20 + 10}px`,
+                      animationDelay: `${i * 0.15}s`,
+                      height: '12px',
+                      width: '8px',
                     }}
                   ></div>
                 ))}

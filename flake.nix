@@ -21,7 +21,7 @@
               nodejs_25
               nodePackages.npm
               nodePackages.typescript
-              nodePackages.vite
+              vite
             ];
             shellHook = ''
               if [ ! -d node_modules ]; then

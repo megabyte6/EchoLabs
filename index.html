@@ -4,7 +4,30 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>EchoLabs - An AI oral assessment platform</title>
+
+        <script>
+            // Initialize theme ASAP to avoid flash
+            (function () {
+                try {
+                    var stored = localStorage.getItem("theme");
+                    var prefersDark =
+                        window.matchMedia &&
+                        window.matchMedia("(prefers-color-scheme: dark)")
+                            .matches;
+                    var isDark = stored ? stored === "dark" : prefersDark;
+                    if (isDark) document.documentElement.classList.add("dark");
+                } catch (e) {}
+            })();
+        </script>
+
         <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            // Enable Tailwind dark mode via the `.dark` class on <html>
+            tailwind.config = {
+                darkMode: "class",
+            };
+        </script>
+
         <link
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
@@ -21,8 +44,11 @@
         </script>
         <link rel="stylesheet" href="/index.css" />
     </head>
-    <body class="bg-slate-50 text-slate-900 font-sans">
+    <body
+        class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased [font-family:ui-sans-serif,system-ui,-apple-system,Segoe_UI,Roboto,Helvetica,Arial,Noto_Sans,Liberation_Sans,sans-serif,Apple_Color_Emoji,Segoe_UI_Emoji] font-sans"
+    >
         <div id="root"></div>
+
         <script type="module" src="/index.tsx"></script>
     </body>
 </html>

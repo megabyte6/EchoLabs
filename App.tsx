@@ -199,11 +199,14 @@ const App: React.FC = () => {
       <main className="flex-1">
         {role === UserRole.NONE && (
           <div className="max-w-4xl mx-auto py-20 px-6 text-center">
-            <h2 className="text-5xl font-black text-slate-800 mb-6 tracking-tight">
+            <h2 className="text-5xl font-black text-slate-800 dark:text-white mb-6 tracking-tight">
               Master Your Oral <br />
-              <span className="text-indigo-600">Assessments</span> with AI.
+              <span className="text-indigo-600 dark:text-indigo-300">
+                Assessments
+              </span>{" "}
+              with AI.
             </h2>
-            <p className="text-xl text-slate-500 mb-12 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-500 dark:text-slate-200 mb-12 max-w-2xl mx-auto">
               An AI-powered platform for automated oral exams. Seamlessly
               conduct 1-on-1 conversations, get instant grades, and detailed
               speech analytics.
@@ -243,13 +246,15 @@ const App: React.FC = () => {
                 },
               ].map((feature, i) => (
                 <div key={i} className="p-6 text-left">
-                  <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-4 border border-indigo-100">
+                  <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center mb-4 border border-indigo-100 dark:bg-slate-900 dark:text-indigo-300 dark:border-slate-800">
                     <i className={`fas ${feature.icon} text-xl`}></i>
                   </div>
-                  <h4 className="font-bold text-slate-800 mb-2">
+                  <h4 className="font-bold text-slate-800 dark:text-white mb-2">
                     {feature.title}
                   </h4>
-                  <p className="text-sm text-slate-500">{feature.desc}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-200">
+                    {feature.desc}
+                  </p>
                 </div>
               ))}
             </div>
@@ -275,7 +280,7 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className="py-8 border-t border-slate-200 text-center text-slate-400 text-sm">
+      <footer className="py-8 border-t border-slate-200 dark:border-slate-800 text-center text-slate-400 dark:text-slate-200 text-sm">
         &copy; {new Date().getFullYear()} EchoLabs - An AI oral assessment
         platform. Powered by Google Gemini.
       </footer>

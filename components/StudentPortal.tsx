@@ -33,20 +33,22 @@ const StudentPortal: React.FC<StudentPortalProps> = ({ onStartAssessment }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-20 p-8 bg-white rounded-3xl border border-slate-200 shadow-xl">
+    <div className="max-w-md mx-auto mt-20 p-8 bg-white rounded-3xl border border-slate-200 shadow-xl dark:bg-slate-900 dark:border-slate-700">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 dark:bg-indigo-500/20 dark:text-indigo-200">
           <i className="fas fa-id-card text-2xl"></i>
         </div>
-        <h2 className="text-2xl font-extrabold text-slate-800">
+        <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white">
           Student Entry
         </h2>
-        <p className="text-slate-500">Enter your details to begin the exam.</p>
+        <p className="text-slate-500 dark:text-slate-100">
+          Enter your details to begin the exam.
+        </p>
       </div>
 
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-white">
             Full Name
           </label>
           <input
@@ -57,11 +59,11 @@ const StudentPortal: React.FC<StudentPortalProps> = ({ onStartAssessment }) => {
               setError("");
             }}
             placeholder="John Doe"
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-200"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-white">
             Assessment Code
           </label>
           <input
@@ -73,7 +75,7 @@ const StudentPortal: React.FC<StudentPortalProps> = ({ onStartAssessment }) => {
             }}
             placeholder="6-digit code"
             maxLength={6}
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-center text-2xl font-mono tracking-widest uppercase transition-all"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-center text-2xl font-mono tracking-widest uppercase transition-all dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-200"
           />
         </div>
 
@@ -91,7 +93,7 @@ const StudentPortal: React.FC<StudentPortalProps> = ({ onStartAssessment }) => {
         </button>
       </div>
 
-      <p className="mt-8 text-center text-xs text-slate-400">
+      <p className="mt-8 text-center text-xs text-slate-400 dark:text-slate-100">
         Requires microphone access. Your conversation will be recorded for
         assessment.
       </p>

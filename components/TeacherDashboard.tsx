@@ -44,13 +44,13 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
     results.filter((r) => r.assessmentId === id);
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6 dark:text-white">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-3xl font-extrabold text-slate-800">
+          <h2 className="text-3xl font-extrabold text-slate-800 dark:text-white">
             Teacher Workspace
           </h2>
-          <p className="text-slate-500">
+          <p className="text-slate-500 dark:text-white/80">
             Create assessments and monitor student performance.
           </p>
         </div>
@@ -63,15 +63,15 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
       </div>
 
       {showCreate && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8 overflow-hidden">
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-8 overflow-hidden dark:bg-slate-950 dark:border dark:border-slate-800">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-slate-800">
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-white">
                 Create Oral Assessment
               </h3>
               <button
                 onClick={() => setShowCreate(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-slate-400 hover:text-slate-600 dark:text-white/70 dark:hover:text-white"
               >
                 <i className="fas fa-times text-xl"></i>
               </button>
@@ -79,7 +79,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-white">
                   Assessment Title
                 </label>
                 <input
@@ -87,11 +87,11 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="e.g., Biology: Cell Structure Midterm"
-                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none dark:bg-slate-900 dark:border-slate-800 dark:text-white"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-white">
                   Study Notes & Rubric
                 </label>
                 <textarea
@@ -99,7 +99,7 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                   onChange={(e) => setNewNotes(e.target.value)}
                   rows={8}
                   placeholder="Paste the notes students should be familiar with here..."
-                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                  className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none resize-none dark:bg-slate-900 dark:border-slate-800 dark:text-white"
                 ></textarea>
               </div>
               <button
@@ -130,21 +130,21 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
           assessments.map((item) => (
             <div
               key={item.id}
-              className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow"
+              className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow dark:bg-slate-950 dark:border-slate-800"
             >
               <div className="flex justify-between items-start mb-4">
-                <h3 className="text-lg font-bold text-slate-800 line-clamp-1">
+                <h3 className="text-lg font-bold text-slate-800 line-clamp-1 dark:text-white">
                   {item.title}
                 </h3>
                 <span className="bg-emerald-50 text-emerald-700 text-xs font-mono font-bold px-2 py-1 rounded border border-emerald-100 uppercase">
                   {item.code}
                 </span>
               </div>
-              <p className="text-slate-500 text-sm mb-6 line-clamp-3 bg-slate-50 p-3 rounded-lg italic">
+              <p className="text-slate-500 text-sm mb-6 line-clamp-3 bg-slate-50 p-3 rounded-lg italic dark:text-white/85 dark:bg-slate-900">
                 {item.notes}
               </p>
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                <div className="text-sm text-slate-400">
+              <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div className="text-sm text-slate-400 dark:text-white/70">
                   <i className="fas fa-users mr-1"></i>{" "}
                   {getSubmissionsFor(item.id).length} Submissions
                 </div>
@@ -164,13 +164,13 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
 
       {results.length > 0 && (
         <div className="mt-12">
-          <h3 className="text-2xl font-bold text-slate-800 mb-6">
+          <h3 className="text-2xl font-bold text-slate-800 mb-6 dark:text-white">
             Recent Submissions
           </h3>
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm dark:bg-slate-950 dark:border-slate-800">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                <tr className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider dark:bg-slate-900 dark:text-white/80">
                   <th className="px-6 py-4">Student</th>
                   <th className="px-6 py-4">Assessment</th>
                   <th className="px-6 py-4">Grade</th>
@@ -179,16 +179,16 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                   <th className="px-6 py-4">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {results.slice(0, 10).map((res, i) => (
                   <tr
                     key={i}
-                    className="hover:bg-indigo-50/30 transition-colors"
+                    className="hover:bg-indigo-50/30 transition-colors dark:hover:bg-white/5"
                   >
-                    <td className="px-6 py-4 font-semibold text-slate-800">
+                    <td className="px-6 py-4 font-semibold text-slate-800 dark:text-white">
                       {res.studentName}
                     </td>
-                    <td className="px-6 py-4 text-slate-500">
+                    <td className="px-6 py-4 text-slate-500 dark:text-white/80">
                       {assessments.find((a) => a.id === res.assessmentId)
                         ?.title || "Deleted"}
                     </td>
@@ -205,10 +205,10 @@ const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ onBack }) => {
                         {res.predictedGrade}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-500">
+                    <td className="px-6 py-4 text-slate-500 dark:text-white/80">
                       {res.totalFillerCount}
                     </td>
-                    <td className="px-6 py-4 text-xs text-slate-400">
+                    <td className="px-6 py-4 text-xs text-slate-400 dark:text-white/70">
                       {new Date(res.completedAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import TeacherDashboard from './components/TeacherDashboard';
 import StudentPortal from './components/StudentPortal';
@@ -28,85 +28,6 @@ const App: React.FC = () => {
   // Replace with your actual Google Client ID
   const GOOGLE_CLIENT_ID = '808241493676-fr9m765g74eq3k7tj5dq35i0gfjnkem2.apps.googleusercontent.com';
 
-  useEffect(() => {
-    // Check if user is already logged in
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsLoading(false);
-      return;
-    }
-
-    // Load Google Identity Services script
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
-
-    script.onload = () => {
-      if (window.google) {
-        window.google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleCredentialResponse,
-        });
-
-        // Render the sign-in button on initial load
-        const buttonDiv = document.getElementById('googleSignInButton');
-        if (buttonDiv) {
-          window.google.accounts.id.renderButton(buttonDiv, {
-            theme: 'filled_blue',
-            size: 'large',
-            text: 'signin_with',
-            shape: 'rectangular',
-          });
-        }
-
-        // Prompt for one-tap sign-in
-        window.google.accounts.id.prompt();
-      }
-      setIsLoading(false);
-    };
-
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-    };
-  }, []);
-
-  // Re-render Google Sign-In button when user signs out
-  useEffect(() => {
-    if (!user && window.google) {
-      // Small delay to ensure DOM is ready
-      setTimeout(() => {
-        const buttonDiv = document.getElementById('googleSignInButton');
-        if (buttonDiv) {
-          // Clear any existing button first
-          buttonDiv.innerHTML = '';
-          window.google.accounts.id.renderButton(buttonDiv, {
-            theme: 'filled_blue',
-            size: 'large',
-            text: 'signin_with',
-            shape: 'rectangular',
-          });
-        }
-      }, 100);
-    }
-  }, [user]);
-
-  const handleCredentialResponse = (response: any) => {
-    const decoded = parseJwt(response.credential);
-    const userData: GoogleUser = {
-      email: decoded.email,
-      name: decoded.name,
-      picture: decoded.picture,
-      sub: decoded.sub,
-    };
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-  };
-
   const parseJwt = (token: string) => {
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -118,6 +39,126 @@ const App: React.FC = () => {
     );
     return JSON.parse(jsonPayload);
   };
+
+  const handleCredentialResponse = useCallback((response: any) => {
+    const decoded = parseJwt(response.credential);
+    const userData: GoogleUser = {
+      email: decoded.email,
+      name: decoded.name,
+      picture: decoded.picture,
+      sub: decoded.sub,
+    };
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+  }, []);
+
+  // Render Google Sign-In button
+  const renderGoogleButton = useCallback(() => {
+    if (!window.google?.accounts?.id) return;
+
+    const buttonDiv = document.getElementById('googleSignInButton');
+    if (buttonDiv) {
+      // Clear any existing button first
+      buttonDiv.innerHTML = '';
+      window.google.accounts.id.renderButton(buttonDiv, {
+        theme: 'filled_blue',
+        size: 'large',
+        text: 'signin_with',
+        shape: 'rectangular',
+      });
+    }
+  }, []);
+
+  // Initialize Google Sign-In
+  const initializeGoogleSignIn = useCallback(() => {
+    if (!window.google?.accounts?.id) return;
+
+    window.google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleCredentialResponse,
+    });
+
+    // Render the sign-in button if the div exists
+    renderGoogleButton();
+
+    // Prompt for one-tap sign-in only if not signed in
+    if (!user) {
+      window.google.accounts.id.prompt();
+    }
+  }, [handleCredentialResponse, renderGoogleButton, user]);
+
+  // Check for stored user and load Google Identity Services script
+  useEffect(() => {
+    // Check if user is already logged in
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+      setIsLoading(false);
+      return;
+    }
+
+    // Check if script is already loaded
+    if (window.google?.accounts?.id) {
+      initializeGoogleSignIn();
+      setIsLoading(false);
+      return;
+    }
+
+    // Check if script tag already exists
+    const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+    if (existingScript) {
+      // Script is loading, wait for it
+      const checkGoogle = setInterval(() => {
+        if (window.google?.accounts?.id) {
+          clearInterval(checkGoogle);
+          initializeGoogleSignIn();
+          setIsLoading(false);
+        }
+      }, 100);
+      
+      return () => clearInterval(checkGoogle);
+    }
+
+    // Load Google Identity Services script
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    script.id = 'google-signin-script';
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      initializeGoogleSignIn();
+      setIsLoading(false);
+    };
+
+    script.onerror = () => {
+      setIsLoading(false);
+    };
+  }, [initializeGoogleSignIn]);
+
+  // Re-render Google Sign-In button when user signs out or sign-in screen is shown
+  useEffect(() => {
+    if (!user && !isLoading) {
+      // Wait a bit for DOM to be ready after render
+      const timer = setTimeout(() => {
+        if (window.google?.accounts?.id) {
+          // Re-initialize to ensure callback is set
+          window.google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleCredentialResponse,
+          });
+          renderGoogleButton();
+        } else {
+          // If Google API not loaded yet, initialize it
+          initializeGoogleSignIn();
+        }
+      }, 200);
+
+      return () => clearTimeout(timer);
+    }
+  }, [user, isLoading, handleCredentialResponse, renderGoogleButton, initializeGoogleSignIn]);
 
   const handleSignOut = () => {
     if (window.google) {
@@ -167,7 +208,7 @@ const App: React.FC = () => {
                 <i className="fas fa-graduation-cap text-2xl"></i>
               </div>
               <h2 className="text-2xl font-bold text-slate-800 mb-2">
-                Welcome to VoxAssess
+                Welcome to EchoLabs
               </h2>
               <p className="text-slate-500">
                 Sign in with Google to get started
@@ -185,7 +226,7 @@ const App: React.FC = () => {
         </main>
 
         <footer className="py-8 border-t border-slate-200 text-center text-slate-400 text-sm">
-          &copy; {new Date().getFullYear()} VoxAssess Oral Assessment AI. Powered by Google Gemini.
+          &copy; {new Date().getFullYear()} EchoLabs Oral Assessment AI. Powered by Google Gemini.
         </footer>
       </div>
     );
@@ -195,6 +236,29 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Header onGoHome={reset} role={role} />
+
+      {/* User Info Bar (persistent) */}
+      <div className="bg-white border-b border-slate-200 px-6 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img 
+              src={user.picture} 
+              alt={user.name}
+              className="w-8 h-8 rounded-full"
+            />
+            <span className="text-sm text-slate-600 font-medium">{user.name}</span>
+            <span className="text-xs text-slate-400">•</span>
+            <span className="text-xs text-slate-500">{user.email}</span>
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="text-sm text-slate-500 hover:text-slate-700 transition-colors flex items-center gap-2"
+          >
+            <i className="fas fa-sign-out-alt"></i>
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </div>
 
       <main className="flex-1">
         {role === UserRole.NONE && (
@@ -269,7 +333,7 @@ const App: React.FC = () => {
                 onFinish={handleFinishAssessment}
               />
             ) : (
-              <StudentPortal onStartAssessment={startStudentSession} />
+              <StudentPortal onStartAssessment={startStudentSession} userName={user.name} />
             )}
           </>
         )}

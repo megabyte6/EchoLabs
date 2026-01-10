@@ -19,8 +19,7 @@
           mkShell {
             buildInputs = [
               nodejs_25
-              nodePackages.npm
-              nodePackages.typescript
+              typescript
               vite
             ];
             shellHook = ''

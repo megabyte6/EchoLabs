@@ -188,16 +188,16 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
     <div className="max-w-4xl mx-auto p-6 flex flex-col h-[calc(100vh-80px)]">
       {!isActive && !isAnalyzing && transcript.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center bg-white p-12 rounded-3xl border border-slate-200 shadow-2xl max-w-lg">
+          <div className="text-center bg-white p-12 rounded-3xl border border-slate-200 shadow-2xl max-w-lg dark:bg-slate-950 dark:border-slate-800">
             <div className="w-20 h-20 bg-indigo-600 text-white rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
               <i className="fas fa-microphone text-3xl"></i>
             </div>
-            <h2 className="text-3xl font-bold text-slate-800 mb-2">
+            <h2 className="text-3xl font-bold text-slate-800 mb-2 dark:text-white">
               Ready to Start?
             </h2>
-            <p className="text-slate-500 mb-8">
+            <p className="text-slate-500 mb-8 dark:text-white/90">
               Hi {studentName}, you are about to start{" "}
-              <span className="font-bold text-slate-800">
+              <span className="font-bold text-slate-800 dark:text-white">
                 {assessment.title}
               </span>
               . Ensure you are in a quiet room and your microphone is working.
@@ -213,13 +213,13 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
       ) : isAnalyzing ? (
         <div className="flex-1 flex flex-col items-center justify-center text-center">
           <div className="relative w-24 h-24 mb-6">
-            <div className="absolute inset-0 border-4 border-indigo-100 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-indigo-100 rounded-full dark:border-slate-800"></div>
             <div className="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
           </div>
-          <h2 className="text-2xl font-bold text-slate-800">
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
             Finalizing Results
           </h2>
-          <p className="text-slate-500 mt-2 max-w-sm">
+          <p className="text-slate-500 mt-2 max-w-sm dark:text-white/90">
             AI is analyzing your conversation, counting filler words, and
             determining your predicted grade. One moment please...
           </p>
@@ -228,11 +228,11 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
         <div className="flex-1 flex flex-col overflow-hidden">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-bold border border-indigo-100">
+              <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 font-bold border border-indigo-100 dark:bg-slate-900 dark:text-indigo-200 dark:border-slate-800">
                 {formatTime(timer)}
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-800">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white">
                   {assessment.title}
                 </h3>
                 <p className="text-xs text-emerald-500 font-bold uppercase flex items-center gap-1">
@@ -243,15 +243,15 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
             </div>
             <button
               onClick={finishAssessment}
-              className="bg-rose-50 hover:bg-rose-100 text-rose-600 px-6 py-2 rounded-xl font-bold border border-rose-200 transition-colors"
+              className="bg-rose-50 hover:bg-rose-100 text-rose-600 px-6 py-2 rounded-xl font-bold border border-rose-200 transition-colors dark:bg-rose-500/10 dark:hover:bg-rose-500/20 dark:text-rose-200 dark:border-rose-500/30"
             >
               End Exam
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto bg-slate-50 rounded-3xl p-6 mb-6 border border-slate-200 space-y-4">
+          <div className="flex-1 overflow-y-auto bg-slate-50 rounded-3xl p-6 mb-6 border border-slate-200 space-y-4 dark:bg-slate-950 dark:border-slate-800">
             {transcript.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-50 italic">
+              <div className="h-full flex flex-col items-center justify-center text-slate-400 opacity-50 italic dark:text-white/80">
                 <i className="fas fa-wave-square text-4xl mb-4"></i>
                 <p>Waiting for speech input...</p>
               </div>
@@ -265,7 +265,7 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
                     className={`max-w-[80%] p-4 rounded-2xl shadow-sm ${
                       entry.role === "user"
                         ? "bg-indigo-600 text-white rounded-tr-none"
-                        : "bg-white text-slate-800 rounded-tl-none border border-slate-200"
+                        : "bg-white text-slate-800 rounded-tl-none border border-slate-200 dark:bg-slate-900 dark:text-white dark:border-slate-800"
                     }`}
                   >
                     <p className="text-sm">{entry.text}</p>
@@ -276,7 +276,7 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
             <div className="h-1 pb-4"></div>
           </div>
 
-          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-lg flex items-center justify-between">
+          <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-lg flex items-center justify-between dark:bg-slate-950 dark:border-slate-800">
             <div className="flex items-center gap-4">
               <div className="flex gap-1">
                 {[1, 2, 3].map((i) => (
@@ -290,11 +290,11 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
                   ></div>
                 ))}
               </div>
-              <p className="text-slate-500 font-medium italic">
+              <p className="text-slate-500 font-medium italic dark:text-white/90">
                 Gemini is listening...
               </p>
             </div>
-            <div className="text-slate-400 text-sm">
+            <div className="text-slate-400 text-sm dark:text-white/80">
               Transcript is saved automatically.
             </div>
           </div>

@@ -1,0 +1,8 @@
+
+{
+  "name": "VoxAssess - AI Oral Assessment Platform",
+  "description": "A comprehensive platform for teachers to conduct AI-powered oral assessments with automated grading, transcription, and speech analytics.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

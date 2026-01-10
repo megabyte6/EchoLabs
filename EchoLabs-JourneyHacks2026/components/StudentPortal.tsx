@@ -1,0 +1,90 @@
+
+import React, { useState } from 'react';
+import { Assessment } from '../types';
+
+interface StudentPortalProps {
+  onStartAssessment: (assessment: Assessment, studentName: string) => void;
+}
+
+const StudentPortal: React.FC<StudentPortalProps> = ({ onStartAssessment }) => {
+  const [code, setCode] = useState('');
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
+
+  const handleJoin = () => {
+    if (!code || !name) {
+      setError('Please enter both your name and the assessment code.');
+      return;
+    }
+
+    const saved = localStorage.getItem('voxassess_assessments');
+    if (!saved) {
+      setError('No assessments found in the system.');
+      return;
+    }
+
+    const assessments: Assessment[] = JSON.parse(saved);
+    const found = assessments.find(a => a.code === code);
+
+    if (found) {
+      onStartAssessment(found, name);
+    } else {
+      setError('Invalid code. Please check with your teacher.');
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto mt-20 p-8 bg-white rounded-3xl border border-slate-200 shadow-xl">
+      <div className="text-center mb-8">
+        <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <i className="fas fa-id-card text-2xl"></i>
+        </div>
+        <h2 className="text-2xl font-extrabold text-slate-800">Student Entry</h2>
+        <p className="text-slate-500">Enter your details to begin the exam.</p>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Full Name</label>
+          <input 
+            type="text" 
+            value={name}
+            onChange={(e) => { setName(e.target.value); setError(''); }}
+            placeholder="John Doe"
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Assessment Code</label>
+          <input 
+            type="text" 
+            value={code}
+            onChange={(e) => { setCode(e.target.value); setError(''); }}
+            placeholder="6-digit code"
+            maxLength={6}
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-center text-2xl font-mono tracking-widest uppercase transition-all"
+          />
+        </div>
+
+        {error && (
+          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-100 flex items-center gap-2">
+            <i className="fas fa-circle-exclamation"></i> {error}
+          </div>
+        )}
+
+        <button 
+          onClick={handleJoin}
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold shadow-lg transition-all transform active:scale-[0.98]"
+        >
+          Join Session
+        </button>
+      </div>
+
+      <p className="mt-8 text-center text-xs text-slate-400">
+        Requires microphone access. Your conversation will be recorded for assessment.
+      </p>
+    </div>
+  );
+};
+
+export default StudentPortal;

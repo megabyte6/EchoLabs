@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import TeacherDashboard from './components/TeacherDashboard';
 import StudentPortal from './components/StudentPortal';
@@ -7,11 +6,126 @@ import AssessmentSession from './components/AssessmentSession';
 import AssessmentReport from './components/AssessmentReport';
 import { UserRole, Assessment, AssessmentResult } from './types';
 
+// Google User Type
+interface GoogleUser {
+  email: string;
+  name: string;
+  picture: string;
+  sub: string;
+}
+
 const App: React.FC = () => {
+  const [user, setUser] = useState<GoogleUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [role, setRole] = useState<UserRole>(UserRole.NONE);
   const [currentAssessment, setCurrentAssessment] = useState<Assessment | null>(null);
   const [studentName, setStudentName] = useState('');
   const [assessmentResult, setAssessmentResult] = useState<AssessmentResult | null>(null);
+
+  // Replace with your actual Google Client ID
+  const GOOGLE_CLIENT_ID = '808241493676-fr9m765g74eq3k7tj5dq35i0gfjnkem2.apps.googleusercontent.com';
+
+  useEffect(() => {
+    // Check if user is already logged in
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+      setIsLoading(false);
+      return;
+    }
+
+    // Load Google Identity Services script
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleCredentialResponse,
+        });
+
+        // Render the sign-in button on initial load
+        const buttonDiv = document.getElementById('googleSignInButton');
+        if (buttonDiv) {
+          window.google.accounts.id.renderButton(buttonDiv, {
+            theme: 'filled_blue',
+            size: 'large',
+            text: 'signin_with',
+            shape: 'rectangular',
+          });
+        }
+
+        // Prompt for one-tap sign-in
+        window.google.accounts.id.prompt();
+      }
+      setIsLoading(false);
+    };
+
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
+
+  // Re-render Google Sign-In button when user signs out
+  useEffect(() => {
+    if (!user && window.google) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        const buttonDiv = document.getElementById('googleSignInButton');
+        if (buttonDiv) {
+          // Clear any existing button first
+          buttonDiv.innerHTML = '';
+          window.google.accounts.id.renderButton(buttonDiv, {
+            theme: 'filled_blue',
+            size: 'large',
+            text: 'signin_with',
+            shape: 'rectangular',
+          });
+        }
+      }, 100);
+    }
+  }, [user]);
+
+  const handleCredentialResponse = (response: any) => {
+    const decoded = parseJwt(response.credential);
+    const userData: GoogleUser = {
+      email: decoded.email,
+      name: decoded.name,
+      picture: decoded.picture,
+      sub: decoded.sub,
+    };
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  const parseJwt = (token: string) => {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  };
+
+  const handleSignOut = () => {
+    if (window.google) {
+      window.google.accounts.id.disableAutoSelect();
+    }
+    setUser(null);
+    setRole(UserRole.NONE);
+    setCurrentAssessment(null);
+    setAssessmentResult(null);
+    localStorage.removeItem('user');
+  };
 
   const reset = () => {
     setRole(UserRole.NONE);
@@ -28,9 +142,76 @@ const App: React.FC = () => {
     setAssessmentResult(result);
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="text-slate-600">Loading...</div>
+      </div>
+    );
+  }
+
+  // Not authenticated - show sign in
+  if (!user) {
+    return (
+      <div className="min-h-screen flex flex-col bg-slate-50">
+        <Header onGoHome={reset} role={UserRole.NONE} />
+        
+        <main className="flex-1 flex items-center justify-center px-6">
+          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i className="fas fa-graduation-cap text-2xl"></i>
+              </div>
+              <h2 className="text-2xl font-bold text-slate-800 mb-2">
+                Welcome to VoxAssess
+              </h2>
+              <p className="text-slate-500">
+                Sign in with Google to get started
+              </p>
+            </div>
+
+            <div className="flex justify-center">
+              <div id="googleSignInButton"></div>
+            </div>
+
+            <p className="text-xs text-slate-400 text-center mt-6">
+              By signing in, you agree to our Terms of Service and Privacy Policy
+            </p>
+          </div>
+        </main>
+
+        <footer className="py-8 border-t border-slate-200 text-center text-slate-400 text-sm">
+          &copy; {new Date().getFullYear()} VoxAssess Oral Assessment AI. Powered by Google Gemini.
+        </footer>
+      </div>
+    );
+  }
+
+  // Authenticated - show main app
   return (
     <div className="min-h-screen flex flex-col">
       <Header onGoHome={reset} role={role} />
+      
+      {/* User info bar */}
+      <div className="bg-white border-b border-slate-200 px-6 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <img 
+              src={user.picture} 
+              alt={user.name}
+              className="w-8 h-8 rounded-full"
+            />
+            <span className="text-sm text-slate-600">{user.name}</span>
+          </div>
+          <button
+            onClick={handleSignOut}
+            className="text-sm text-slate-500 hover:text-slate-700 transition-colors"
+          >
+            <i className="fas fa-sign-out-alt mr-2"></i>Sign Out
+          </button>
+        </div>
+      </div>
       
       <main className="flex-1">
         {role === UserRole.NONE && (
@@ -103,5 +284,12 @@ const App: React.FC = () => {
     </div>
   );
 };
+
+// TypeScript declaration for Google
+declare global {
+  interface Window {
+    google: any;
+  }
+}
 
 export default App;

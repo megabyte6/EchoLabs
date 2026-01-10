@@ -189,8 +189,8 @@ const App: React.FC = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-slate-600">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="text-slate-600 dark:text-slate-300">Loading...</div>
       </div>
     );
   }
@@ -198,19 +198,19 @@ const App: React.FC = () => {
   // Not authenticated - show sign in
   if (!user) {
     return (
-      <div className="min-h-screen flex flex-col bg-slate-50">
+      <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
         <Header onGoHome={reset} role={UserRole.NONE} />
         
         <main className="flex-1 flex items-center justify-center px-6">
-          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
+          <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8 border border-slate-200 dark:border-slate-800">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i className="fas fa-graduation-cap text-2xl"></i>
               </div>
-              <h2 className="text-2xl font-bold text-slate-800 mb-2">
+              <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">
                 Welcome to EchoLabs
               </h2>
-              <p className="text-slate-500">
+              <p className="text-slate-500 dark:text-slate-300">
                 Sign in with Google to get started
               </p>
             </div>
@@ -219,13 +219,13 @@ const App: React.FC = () => {
               <div id="googleSignInButton"></div>
             </div>
 
-            <p className="text-xs text-slate-400 text-center mt-6">
+            <p className="text-xs text-slate-400 dark:text-slate-400 text-center mt-6">
               By signing in, you agree to our Terms of Service and Privacy Policy
             </p>
           </div>
         </main>
 
-        <footer className="py-8 border-t border-slate-200 text-center text-slate-400 text-sm">
+        <footer className="py-8 border-t border-slate-200 dark:border-slate-800 text-center text-slate-400 dark:text-slate-400 text-sm">
           &copy; {new Date().getFullYear()} EchoLabs Oral Assessment AI. Powered by Google Gemini.
         </footer>
       </div>
@@ -234,11 +234,11 @@ const App: React.FC = () => {
 
   // Authenticated - show main app
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
       <Header onGoHome={reset} role={role} />
 
       {/* User Info Bar (persistent) */}
-      <div className="bg-white border-b border-slate-200 px-6 py-3">
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img 
@@ -246,13 +246,13 @@ const App: React.FC = () => {
               alt={user.name}
               className="w-8 h-8 rounded-full"
             />
-            <span className="text-sm text-slate-600 font-medium">{user.name}</span>
-            <span className="text-xs text-slate-400">•</span>
-            <span className="text-xs text-slate-500">{user.email}</span>
+            <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">{user.name}</span>
+            <span className="text-xs text-slate-400 dark:text-slate-500">•</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">{user.email}</span>
           </div>
           <button
             onClick={handleSignOut}
-            className="text-sm text-slate-500 hover:text-slate-700 transition-colors flex items-center gap-2"
+            className="text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors flex items-center gap-2"
           >
             <i className="fas fa-sign-out-alt"></i>
             <span>Sign Out</span>
@@ -279,13 +279,13 @@ const App: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
               <button
                 onClick={() => setRole(UserRole.TEACHER)}
-                className="w-full sm:w-64 bg-slate-800 hover:bg-slate-900 text-white px-8 py-5 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-3 transition-all"
+                className="w-full sm:w-64 bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white px-8 py-5 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-3 transition-all"
               >
                 <i className="fas fa-chalkboard-user"></i> I'm a Teacher
               </button>
               <button
                 onClick={() => setRole(UserRole.STUDENT)}
-                className="w-full sm:w-64 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-5 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-3 transition-all"
+                className="w-full sm:w-64 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white px-8 py-5 rounded-2xl font-bold text-lg shadow-xl flex items-center justify-center gap-3 transition-all"
               >
                 <i className="fas fa-user-graduate"></i> I'm a Student
               </button>

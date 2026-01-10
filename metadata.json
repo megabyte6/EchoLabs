@@ -1,8 +1,5 @@
-
 {
-  "name": "VoxAssess - AI Oral Assessment Platform",
+  "name": "EchoLabs - An AI oral assessment platform",
   "description": "A comprehensive platform for teachers to conduct AI-powered oral assessments with automated grading, transcription, and speech analytics.",
-  "requestFramePermissions": [
-    "microphone"
-  ]
+  "requestFramePermissions": ["microphone"]
 }

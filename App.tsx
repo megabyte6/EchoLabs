@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import Header from './components/Header';
-import TeacherDashboard from './components/TeacherDashboard';
-import StudentPortal from './components/StudentPortal';
-import AssessmentSession from './components/AssessmentSession';
-import AssessmentReport from './components/AssessmentReport';
-import { UserRole, Assessment, AssessmentResult } from './types';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import Header from "./components/Header";
+import TeacherDashboard from "./components/TeacherDashboard";
+import StudentPortal from "./components/StudentPortal";
+import AssessmentSession from "./components/AssessmentSession";
+import AssessmentReport from "./components/AssessmentReport";
+import { UserRole, Assessment, AssessmentResult } from "./types";
 
 // Google User Type
 interface GoogleUser {
@@ -26,16 +26,20 @@ const App: React.FC = () => {
     useState<AssessmentResult | null>(null);
 
   // Replace with your actual Google Client ID
-  const GOOGLE_CLIENT_ID = '808241493676-fr9m765g74eq3k7tj5dq35i0gfjnkem2.apps.googleusercontent.com';
+  const GOOGLE_CLIENT_ID =
+    "808241493676-fr9m765g74eq3k7tj5dq35i0gfjnkem2.apps.googleusercontent.com";
+
+  // Prevent re-initialization/render loops caused by effects re-running after state updates
+  const googleInitRef = useRef(false);
 
   const parseJwt = (token: string) => {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = decodeURIComponent(
       atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(""),
     );
     return JSON.parse(jsonPayload);
   };
@@ -49,27 +53,33 @@ const App: React.FC = () => {
       sub: decoded.sub,
     };
     setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem("user", JSON.stringify(userData));
   }, []);
+
+  // Keep the latest user available without making init callbacks depend on `user`
+  const userRef = useRef<GoogleUser | null>(null);
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   // Render Google Sign-In button
   const renderGoogleButton = useCallback(() => {
     if (!window.google?.accounts?.id) return;
 
-    const buttonDiv = document.getElementById('googleSignInButton');
+    const buttonDiv = document.getElementById("googleSignInButton");
     if (buttonDiv) {
       // Clear any existing button first
-      buttonDiv.innerHTML = '';
+      buttonDiv.innerHTML = "";
       window.google.accounts.id.renderButton(buttonDiv, {
-        theme: 'filled_blue',
-        size: 'large',
-        text: 'signin_with',
-        shape: 'rectangular',
+        theme: "filled_blue",
+        size: "large",
+        text: "signin_with",
+        shape: "rectangular",
       });
     }
   }, []);
 
-  // Initialize Google Sign-In
+  // Initialize Google Sign-In (intentionally NOT dependent on `user` to avoid effect loops)
   const initializeGoogleSignIn = useCallback(() => {
     if (!window.google?.accounts?.id) return;
 
@@ -82,15 +92,15 @@ const App: React.FC = () => {
     renderGoogleButton();
 
     // Prompt for one-tap sign-in only if not signed in
-    if (!user) {
+    if (!userRef.current) {
       window.google.accounts.id.prompt();
     }
-  }, [handleCredentialResponse, renderGoogleButton, user]);
+  }, [handleCredentialResponse, renderGoogleButton]);
 
   // Check for stored user and load Google Identity Services script
   useEffect(() => {
     // Check if user is already logged in
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
@@ -98,38 +108,54 @@ const App: React.FC = () => {
       return;
     }
 
+    // If we already kicked off init for this page lifecycle, don't do it again.
+    // This prevents "Maximum update depth exceeded" loops when init triggers renders.
+    if (googleInitRef.current) {
+      setIsLoading(false);
+      return;
+    }
+
     // Check if script is already loaded
     if (window.google?.accounts?.id) {
+      googleInitRef.current = true;
       initializeGoogleSignIn();
       setIsLoading(false);
       return;
     }
 
     // Check if script tag already exists
-    const existingScript = document.querySelector('script[src="https://accounts.google.com/gsi/client"]');
+    const existingScript = document.querySelector(
+      'script[src="https://accounts.google.com/gsi/client"]',
+    );
     if (existingScript) {
       // Script is loading, wait for it
       const checkGoogle = setInterval(() => {
         if (window.google?.accounts?.id) {
           clearInterval(checkGoogle);
-          initializeGoogleSignIn();
+          if (!googleInitRef.current) {
+            googleInitRef.current = true;
+            initializeGoogleSignIn();
+          }
           setIsLoading(false);
         }
       }, 100);
-      
+
       return () => clearInterval(checkGoogle);
     }
 
     // Load Google Identity Services script
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
+    const script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
     script.async = true;
     script.defer = true;
-    script.id = 'google-signin-script';
+    script.id = "google-signin-script";
     document.body.appendChild(script);
 
     script.onload = () => {
-      initializeGoogleSignIn();
+      if (!googleInitRef.current) {
+        googleInitRef.current = true;
+        initializeGoogleSignIn();
+      }
       setIsLoading(false);
     };
 
@@ -144,31 +170,44 @@ const App: React.FC = () => {
       // Wait a bit for DOM to be ready after render
       const timer = setTimeout(() => {
         if (window.google?.accounts?.id) {
-          // Re-initialize to ensure callback is set
-          window.google.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
-            callback: handleCredentialResponse,
-          });
+          // Only re-init if we haven't already initialized in this lifecycle.
+          // Re-initializing can trigger internal updates that cause render loops.
+          if (!googleInitRef.current) {
+            googleInitRef.current = true;
+            window.google.accounts.id.initialize({
+              client_id: GOOGLE_CLIENT_ID,
+              callback: handleCredentialResponse,
+            });
+          }
           renderGoogleButton();
         } else {
-          // If Google API not loaded yet, initialize it
+          // If Google API not loaded yet, initialize it (guarded inside init effect too)
           initializeGoogleSignIn();
         }
       }, 200);
 
       return () => clearTimeout(timer);
     }
-  }, [user, isLoading, handleCredentialResponse, renderGoogleButton, initializeGoogleSignIn]);
+  }, [
+    user,
+    isLoading,
+    handleCredentialResponse,
+    renderGoogleButton,
+    initializeGoogleSignIn,
+  ]);
 
   const handleSignOut = () => {
     if (window.google) {
       window.google.accounts.id.disableAutoSelect();
     }
+    // Allow the sign-in flow to initialize again after sign-out
+    googleInitRef.current = false;
+
     setUser(null);
     setRole(UserRole.NONE);
     setCurrentAssessment(null);
     setAssessmentResult(null);
-    localStorage.removeItem('user');
+    localStorage.removeItem("user");
   };
 
   const reset = () => {
@@ -200,7 +239,7 @@ const App: React.FC = () => {
     return (
       <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
         <Header onGoHome={reset} role={UserRole.NONE} />
-        
+
         <main className="flex-1 flex items-center justify-center px-6">
           <div className="max-w-md w-full bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8 border border-slate-200 dark:border-slate-800">
             <div className="text-center mb-8">
@@ -241,8 +280,8 @@ const App: React.FC = () => {
       <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-3">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img 
-              src={user.picture} 
+            <img
+              src={user.picture}
               alt={user.name}
               className="w-8 h-8 rounded-full"
             />
@@ -338,7 +377,10 @@ const App: React.FC = () => {
                 onFinish={handleFinishAssessment}
               />
             ) : (
-              <StudentPortal onStartAssessment={startStudentSession} userName={user.name} />
+              <StudentPortal
+                onStartAssessment={startStudentSession}
+                userName={user.name}
+              />
             )}
           </>
         )}

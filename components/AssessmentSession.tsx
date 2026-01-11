@@ -26,6 +26,11 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
   const sessionRef = useRef<any>(null);
   const transcriptRef = useRef<TranscriptEntry[]>([]);
 
+  const micStreamRef = useRef<MediaStream | null>(null);
+  const inputSourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
+  const scriptProcessorRef = useRef<ScriptProcessorNode | null>(null);
+  const closingRef = useRef(false);
+
   const currentInputTranscription = useRef("");
   const currentOutputTranscription = useRef("");
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -51,7 +56,10 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
 
   const startAssessment = async () => {
     try {
+      closingRef.current = false;
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micStreamRef.current = stream;
 
       const inCtx = new (
         window.AudioContext || (window as any).webkitAudioContext
@@ -69,11 +77,28 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
           const source = inCtx.createMediaStreamSource(stream);
           const scriptProcessor = inCtx.createScriptProcessor(4096, 1, 1);
 
+          inputSourceNodeRef.current = source;
+          scriptProcessorRef.current = scriptProcessor;
+
           scriptProcessor.onaudioprocess = (event) => {
+            if (closingRef.current) return;
+
             const inputData = event.inputBuffer.getChannelData(0);
             const pcmBlob = createBlob(inputData);
+
             sessionPromise.then((session: any) => {
-              session.sendRealtimeInput({ media: pcmBlob });
+              if (closingRef.current) return;
+
+              // Avoid sending once the session is closing/closed.
+              // Some implementations expose an underlying WebSocket as `session.ws`.
+              const ws: WebSocket | undefined = session?.ws;
+              if (ws && ws.readyState !== WebSocket.OPEN) return;
+
+              try {
+                session.sendRealtimeInput({ media: pcmBlob });
+              } catch {
+                // Ignore send errors during shutdown.
+              }
             });
           };
 
@@ -156,8 +181,41 @@ const AssessmentSession: React.FC<AssessmentSessionProps> = ({
 
   const finishAssessment = async () => {
     setIsAnalyzing(true);
+    closingRef.current = true;
+
+    // Stop producing audio immediately so we don't send frames on a closing/closed socket.
+    try {
+      scriptProcessorRef.current?.disconnect();
+    } catch {}
+    try {
+      inputSourceNodeRef.current?.disconnect();
+    } catch {}
+    micStreamRef.current?.getTracks().forEach((t) => t.stop());
+    micStreamRef.current = null;
+
+    try {
+      await audioContextRef.current?.close();
+    } catch {}
+    audioContextRef.current = null;
+
+    // Stop any queued playback
+    sourcesRef.current.forEach((s) => {
+      try {
+        s.stop();
+      } catch {}
+    });
+    sourcesRef.current.clear();
+    nextStartTimeRef.current = 0;
+
+    try {
+      await outAudioContextRef.current?.close();
+    } catch {}
+    outAudioContextRef.current = null;
+
     if (sessionRef.current) {
-      sessionRef.current.close();
+      try {
+        sessionRef.current.close();
+      } catch {}
     }
 
     // Analyze transcript

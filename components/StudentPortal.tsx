@@ -1,14 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Assessment } from "../types";
 
 interface StudentPortalProps {
   onStartAssessment: (assessment: Assessment, studentName: string) => void;
+  userName?: string;
 }
 
-const StudentPortal: React.FC<StudentPortalProps> = ({ onStartAssessment }) => {
+const StudentPortal: React.FC<StudentPortalProps> = ({ onStartAssessment, userName }) => {
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (userName) {
+      setName(userName);
+    }
+  }, [userName]);
 
   const handleJoin = () => {
     if (!code || !name) {
@@ -59,8 +66,12 @@ const StudentPortal: React.FC<StudentPortalProps> = ({ onStartAssessment }) => {
               setError("");
             }}
             placeholder="John Doe"
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition-all dark:border-slate-700 dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-200"
+            disabled={!!userName}
+            className={`w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all dark:bg-slate-950 dark:text-white dark:placeholder:text-slate-400 ${userName ? 'bg-slate-50 dark:bg-slate-900 cursor-not-allowed' : ''}`}
           />
+          {userName && (
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Name automatically filled from your account</p>
+          )}
         </div>
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1 dark:text-white">
@@ -80,14 +91,14 @@ const StudentPortal: React.FC<StudentPortalProps> = ({ onStartAssessment }) => {
         </div>
 
         {error && (
-          <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-100 flex items-center gap-2">
+          <div className="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-sm p-3 rounded-lg border border-red-100 dark:border-red-500/30 flex items-center gap-2">
             <i className="fas fa-circle-exclamation"></i> {error}
           </div>
         )}
 
         <button
           onClick={handleJoin}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-4 rounded-xl font-bold shadow-lg transition-all transform active:scale-[0.98]"
+          className="w-full bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg transition-all transform active:scale-[0.98]"
         >
           Join Session
         </button>

@@ -120,7 +120,7 @@ const AssessmentReport: React.FC<AssessmentReportProps> = ({
       <div className="flex justify-center">
         <button
           onClick={onDone}
-          className="bg-slate-800 hover:bg-slate-900 text-white px-12 py-4 rounded-2xl font-bold shadow-lg transition-all"
+          className="bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 text-white px-12 py-4 rounded-2xl font-bold shadow-lg transition-all"
         >
           Return to Portal
         </button>
